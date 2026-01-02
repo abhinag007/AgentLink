@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b0c15;
+  --foreground: #ededed;
+  --signal-green: #14F195;
+  --electric-blue: #00d4ff;
+  --slate-gray: #1e293b;
+  --phantom-purple: #AB9FF2;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Smooth scrolling for agent registry */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+.smooth-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.smooth-scroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 10px;
+}
+
+.smooth-scroll::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+  border-radius: 10px;
+}
+
+.smooth-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Solana Wallet Adapter Dark Theme Overrides */
+.wallet-adapter-button {
+  background-color: #AB9FF2 !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.wallet-adapter-button:hover {
+  background-color: #9a8ee8 !important;
+  box-shadow: 0 0 30px rgba(171, 159, 242, 0.5) !important;
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background-color: #9a8ee8 !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background-color: rgba(11, 12, 21, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.wallet-adapter-modal {
+  background-color: #0b0c15 !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+.wallet-adapter-modal-title {
+  color: white !important;
+}
+
+.wallet-adapter-modal-list {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.wallet-adapter-modal-list-item {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+  border: 1px solid rgba(148, 163, 184, 0.1) !important;
+  color: white !important;
+  transition: all 0.2s ease !important;
+}
+
+.wallet-adapter-modal-list-item:hover {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  border-color: #14F195 !important;
+}
+
+.wallet-adapter-modal-list-item .wallet-adapter-button {
+  background-color: transparent !important;
+  color: white !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+}
+
+.wallet-adapter-modal-list-item .wallet-adapter-button:hover {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Hide the Solana Wallet Adapter error notifications - we use custom toasts */
+.wallet-adapter-notification {
+  display: none !important;
+}
+
+/* More specific targeting for wallet error modals */
+.wallet-adapter-modal-wrapper > div[role="alertdialog"] {
+  display: none !important;
+}
+
+/* Hide any error overlays from wallet adapter */
+body > div[class*="notification"],
+body > div[role="alert"] {
+  display: none !important;
+}

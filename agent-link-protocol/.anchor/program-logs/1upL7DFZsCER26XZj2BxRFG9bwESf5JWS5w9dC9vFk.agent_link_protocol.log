@@ -1,0 +1,12 @@
+Streaming transaction logs mentioning 1upL7DFZsCER26XZj2BxRFG9bwESf5JWS5w9dC9vFk. Confirmed commitment
+Transaction executed in slot 4:
+  Signature: 49eJTC7J1MV2xutfhwNcmLbTk8YYkcdx1DVsNgzNEmBDXrouJssFN3cBxu7C6eWURagh2tFxt2ad4FL8HG7579n6
+  Status: Ok
+  Log Messages:
+    Program 1upL7DFZsCER26XZj2BxRFG9bwESf5JWS5w9dC9vFk invoke [1]
+    Program log: Instruction: RegisterAgent
+    Program 11111111111111111111111111111111 invoke [2]
+    Program 11111111111111111111111111111111 success
+    Program log: Agent Registered! Welcome to the Economy.
+    Program 1upL7DFZsCER26XZj2BxRFG9bwESf5JWS5w9dC9vFk consumed 10817 of 200000 compute units
+    Program 1upL7DFZsCER26XZj2BxRFG9bwESf5JWS5w9dC9vFk success

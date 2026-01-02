@@ -1,0 +1,96 @@
+agent-link-oracle/
+│
+├── 📄 Configuration Files
+│   ├── .gitignore              # Git ignore rules
+│   ├── .env                    # Environment variables (not in git)
+│   ├── package.json            # Dependencies and scripts
+│   ├── package-lock.json       # Locked dependencies
+│   └── tsconfig.json           # TypeScript configuration
+│
+├── 📚 Documentation
+│   ├── README.md               # Main documentation
+│   ├── DEVELOPMENT.md          # Developer guide
+│   ├── STRUCTURE.md            # Architecture overview
+│   ├── MIGRATION.md            # Migration guide
+│   ├── CHANGELOG.md            # Version history
+│   └── .project-tree           # This file
+│
+├── 📦 Dependencies
+│   └── node_modules/           # NPM packages
+│
+└── 💻 Source Code (src/)
+    │
+    ├── 🔧 config/              # Configuration & Setup
+    │   ├── blockchain.ts       # Blockchain utilities
+    │   │   ├── initializeBlockchain()
+    │   │   ├── loadIdl()
+    │   │   ├── getProgramId()
+    │   │   ├── initializeProgram()
+    │   │   └── deriveAgentPda()
+    │   │
+    │   ├── constants.ts        # Application constants
+    │   │   ├── DEFAULT_PORT
+    │   │   ├── DEFAULT_RPC_URL
+    │   │   └── SEEDS
+    │   │
+    │   └── idl.json           # Solana program IDL
+    │
+    ├── 📜 scripts/            # CLI Utilities
+    │   ├── register-bot.ts    # Register oracle bot
+    │   │   └── One-time setup script
+    │   │
+    │   └── manual-boost.ts    # Manual reputation boost
+    │       └── Testing utility
+    │
+    ├── 🌐 server/             # API Server
+    │   └── index.ts           # Express server
+    │       ├── GET /          # Health check
+    │       ├── POST /webhook/github  # GitHub webhook
+    │       └── GET /status    # Oracle status
+    │
+    └── 📐 types/              # Type Definitions
+        └── index.ts           # TypeScript interfaces
+            ├── GitHubWebhookPayload
+            ├── OracleConfig
+            └── TransactionResponse
+
+═══════════════════════════════════════════════════════════
+
+📋 Quick Commands:
+
+  npm start              Start the oracle server
+  npm run dev            Start with auto-restart
+  npm run register       Register oracle bot
+  npm run manual-boost   Test reputation boost
+
+═══════════════════════════════════════════════════════════
+
+🔑 Key Files:
+
+  Entry Points:
+    • src/server/index.ts           - Main server
+    • src/scripts/register-bot.ts   - Bot registration
+    • src/scripts/manual-boost.ts   - Manual boost
+
+  Configuration:
+    • src/config/blockchain.ts      - Blockchain setup
+    • src/config/constants.ts       - App constants
+    • src/config/idl.json          - Program IDL
+
+  Types:
+    • src/types/index.ts           - Type definitions
+
+═══════════════════════════════════════════════════════════
+
+📊 Project Stats:
+
+  Total Files:        15
+  TypeScript Files:   7
+  Config Files:       4
+  Documentation:      5
+  Lines of Code:      ~400
+  Lines of Docs:      ~500
+
+═══════════════════════════════════════════════════════════
+
+
