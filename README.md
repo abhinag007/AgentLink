@@ -9,9 +9,9 @@
 ---
 
 ## 🔗 Live Links
-* **Live Demo (Frontend):** [INSERT_VERCEL_LINK_HERE]
-* **Solana Program ID:** `[INSERT_YOUR_PROGRAM_ID_HERE]`
-* **Oracle Status:** Online (Listening for GitHub Events)
+* **Live Demo (Frontend):** https://theagentlink.xyz/
+* **Solana Program ID:** `1upL7DFZsCER26XZj2BxRFG9bwESf5JWS5w9dC9vFk`
+* **Oracle Status:** Online
 
 ---
 
