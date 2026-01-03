@@ -37,15 +37,25 @@
               },
               {
                 "kind": "account",
-                "path": "user"
+                "path": "owner"
               }
             ]
           }
         },
         {
-          "name": "user",
+          "name": "owner",
+          "docs": [
+            "We only pass this account to verify the correct PDA seeds."
+          ]
+        },
+        {
+          "name": "oracle",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []

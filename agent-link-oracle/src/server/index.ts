@@ -2,6 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import crypto from "crypto";
+import { createClient } from "@supabase/supabase-js"; // <--- DATABASE
+import { PublicKey } from "@solana/web3.js";
 import {
   initializeBlockchain,
   initializeProgram,
@@ -9,120 +12,144 @@ import {
   getProgramId,
 } from "../config/blockchain.js";
 import { DEFAULT_PORT } from "../config/constants.js";
-import type { TransactionResponse, GitHubWebhookPayload } from "../types/index.js";
 
 dotenv.config();
 
 // --- CONFIGURATION ---
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : DEFAULT_PORT;
+
+// 1. Blockchain Setup
 const { connection, wallet } = initializeBlockchain();
 const program = initializeProgram(connection, wallet);
 const PROGRAM_ID = getProgramId();
+
+// 2. Database Setup (Supabase)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error("❌ FATAL: Supabase URL/Key missing in .env");
+  process.exit(1);
+}
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- SERVER SETUP ---
 const app = express();
 app.use(cors());
 app.use(express.json()); 
-app.use(express.urlencoded({ extended: true })); // Handle default GitHub format just in case
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // --- ROUTES ---
 
+app.get("/", (req, res) => res.send("🤖 AgentLink Oracle (Production Ready)"));
+
 /**
- * Health Check - Verify server is running
+ * 🆕 REGISTER ENDPOINT
+ * Frontend calls this to link GitHub User <-> Solana Wallet
  */
-app.get("/", (req, res) => {
-  res.send("🤖 AgentLink Oracle is Running...");
+app.post("/register", async (req, res) => {
+  const { github_username, wallet_address } = req.body;
+
+  if (!github_username || !wallet_address) {
+    return res.status(400).json({ error: "Missing github_username or wallet_address" });
+  }
+
+  // TODO (Next Step): Verify wallet signature here to prevent spoofing!
+  // For now, we store the mapping directly.
+  
+  try {
+    const { data, error } = await supabase
+      .from("user_mappings")
+      .upsert([
+        { github_username: github_username, wallet_address: wallet_address }
+      ])
+      .select();
+
+    if (error) throw error;
+
+    console.log(`📝 Registered: ${github_username} -> ${wallet_address}`);
+    res.status(200).json({ success: true, message: "User linked successfully" });
+  } catch (err: any) {
+    console.error("Database Error:", err.message);
+    res.status(500).json({ error: "Failed to save mapping" });
+  }
 });
 
 /**
- * GitHub Webhook Endpoint
- * Triggered when GitHub events occur (e.g., PR merged)
+ * WEBHOOK ENDPOINT
+ * Secure + Database Integrated
  */
 app.post("/webhook/github", async (req, res) => {
   console.log("🔔 Webhook Received!");
 
-  // DEBUG: Check if body exists
-  if (!req.body) {
-    console.error("❌ Error: req.body is undefined. Check 'Content-Type' in GitHub Settings!");
-    return res.status(400).json({ error: "Missing body" });
+  // --- 1. SECURITY: Verify Signature ---
+  const signature = req.headers["x-hub-signature-256"];
+  const secret = process.env.GITHUB_WEBHOOK_SECRET;
+
+  if (!secret || !signature) return res.status(401).json({ error: "Auth missing" });
+
+  const hmac = crypto.createHmac("sha256", secret);
+  const digest = "sha256=" + hmac.update(JSON.stringify(req.body)).digest("hex");
+  
+  if (signature !== digest) {
+    console.warn("🚨 Signature Mismatch!");
+    return res.status(401).json({ error: "Invalid signature" });
   }
 
+  // --- 2. LOGIC: Check for Merged PR ---
   const payload = req.body;
-
-  // DEBUG: Log the action
-  console.log("👉 Payload Action:", payload.action || "No action found");
-
-  // --- GATEKEEPER LOGIC ---
-  const isClosed = payload.action === "closed";
-  const isMerged = payload.pull_request?.merged === true;
-
-  if (!isClosed || !isMerged) {
-    console.log(`🚫 Event Ignored: Action '${payload.action}' (Merged: ${isMerged})`);
+  if (payload.action !== "closed" || !payload.pull_request?.merged) {
     return res.json({ status: "ignored" });
   }
 
-  // --- IF WE ARE HERE, IT IS A REAL MERGE! 🚀 ---
-  console.log(`✅ PR MERGED! User '${payload.pull_request?.user?.login}' contributed code.`);
-  console.log("⚡ Starting Blockchain Transaction...");
+  const githubUser = payload.pull_request.user.login;
+  console.log(`✅ PR Merged by GitHub User: ${githubUser}`);
 
+  // --- 3. DATABASE: Find the Wallet for this User ---
+  const { data: userRecord, error } = await supabase
+    .from("user_mappings")
+    .select("wallet_address")
+    .eq("github_username", githubUser)
+    .single();
+
+  if (error || !userRecord) {
+    console.warn(`⚠️ No wallet found for GitHub user: ${githubUser}`);
+    return res.status(404).json({ error: "User not registered in AgentLink" });
+  }
+
+  // Convert string address to PublicKey
+  const targetWallet = new PublicKey(userRecord.wallet_address);
+  console.log(`🔗 Found Linked Wallet: ${targetWallet.toBase58()}`);
+
+  // --- 4. BLOCKCHAIN: Execute the Transaction ---
   try {
-    // 1. Derive Address
-    const [agentPda] = deriveAgentPda(wallet.publicKey, PROGRAM_ID);
-    console.log(`🎯 Agent Address: ${agentPda.toBase58()}`);
+    // A. Derive the Agent PDA using the USER'S wallet (not the Oracle's)
+    const [agentPda] = deriveAgentPda(targetWallet, PROGRAM_ID);
+    console.log(`🎯 Updating Agent Account: ${agentPda.toBase58()}`);
 
-    // 2. Send Transaction
+    // B. Send Transaction
+    // CRITICAL FIX: We pass 'owner' (User) and 'oracle' (Signer) separately
     const tx = await (program.methods as any)
-      .addReputation()
+      .addReputation() // Ensure this matches your Rust function name
       .accounts({
-        agentAccount: agentPda,
-        user: wallet.publicKey,
+        agentAccount: agentPda,       // The User's PDA
+        owner: targetWallet,          // ✅ The User's Public Key (passed as 'owner')
+        oracle: wallet.publicKey,     // ✅ The Oracle pays for gas (signer)
+        systemProgram: PublicKey.default,
       })
       .rpc();
 
-    console.log(`✅ Transaction Success! Signature: ${tx}`);
-    
-    res.status(200).json({
-      success: true,
-      tx: tx,
-      message: "Reputation Boosted for Merged PR"
-    });
+    console.log(`✅ Reputation Updated! Tx: ${tx}`);
+    res.status(200).json({ success: true, tx, user: githubUser });
 
-  } catch (error) {
-    console.error("❌ Blockchain Transaction Failed:", error);
-    res.status(500).json({
-      success: false,
-      error: "Blockchain transaction failed",
-    });
+  } catch (err: any) {
+    console.error("❌ Blockchain Transaction Failed:", err);
+    // Log detailed anchor errors if available
+    if (err.logs) console.error(err.logs);
+    
+    res.status(500).json({ error: "Transaction Failed" });
   }
 });
 
-
-/**
- * Get Oracle Bot Status
- */
-app.get("/status", async (req, res) => {
-  try {
-    const [agentPda] = deriveAgentPda(wallet.publicKey, PROGRAM_ID);
-    
-    res.status(200).json({
-      status: "online",
-      walletAddress: wallet.publicKey.toBase58(),
-      agentPda: agentPda.toBase58(),
-      network: connection.rpcEndpoint,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      error: "Failed to fetch status",
-    });
-  }
-});
-
-// --- START SERVER ---
-app.listen(PORT, () => {
-  console.log(`\n🚀 Oracle Server listening on http://localhost:${PORT}`);
-  console.log(`📡 Connected to: ${connection.rpcEndpoint}`);
-  console.log(`🔑 Wallet: ${wallet.publicKey.toBase58()}`);
-  console.log(`\nTest webhook: curl -X POST http://localhost:${PORT}/webhook/github`);
-});
+app.listen(PORT, () => console.log(`🚀 Production Server on ${PORT}`));

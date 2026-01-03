@@ -339,4 +339,3 @@ The **agent-link-oracle** project is now:
 **Version**: 2.0.0
 **Date**: December 31, 2025
 
-

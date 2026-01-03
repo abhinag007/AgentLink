@@ -25,4 +25,3 @@ export interface TransactionResponse {
   error?: string;
 }
 
-
