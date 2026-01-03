@@ -45,3 +45,4 @@ agent-link-protocol/.env.test
 agent-link-protocol/.env.production
 agent-link-protocol/.DS_Store
 agent-link-protocol/src/.DS_Store
+agent-link-protocol/target/

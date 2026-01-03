@@ -75,13 +75,21 @@ pub struct RegisterAgent<'info> {
 pub struct UpdateAgent<'info> {
     #[account(
         mut,
-        seeds = [b"agent", user.key().as_ref()], 
+        // ✅ CRITICAL FIX: Use 'owner' key for seeds, NOT the signer's key
+        // This allows the Oracle (signer) to update the User's (owner) account
+        seeds = [b"agent", owner.key().as_ref()], 
         bump,
-        // FIX: Manually check if the agent's owner == the current user
-        constraint = agent_account.owner == user.key()
+        // Optional sanity check: Ensure the account actually belongs to this owner
+        constraint = agent_account.owner == owner.key()
     )]
     pub agent_account: Account<'info, AgentAccount>,
 
+    /// CHECK: This is the User (GitHub Developer). They do NOT need to sign.
+    /// We only pass this account to verify the correct PDA seeds.
+    pub owner: UncheckedAccount<'info>, 
+
     #[account(mut)]
-    pub user: Signer<'info>, // This matches the 'user' used in the constraint above
+    pub oracle: Signer<'info>, // ✅ The Oracle (Your Node.js Backend) pays gas
+
+    pub system_program: Program<'info, System>,
 }
