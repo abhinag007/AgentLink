@@ -21,7 +21,6 @@ agent-link-oracle/node_modules
 agent-link-oracle/package-lock.json
 agent-link-oracle/dist
 agent-link-oracle/.env
-agent-link-oracle/.env.local
 agent-link-oracle/.env.development.local
 agent-link-oracle/.env.test.local
 agent-link-oracle/.env.production.local
@@ -30,6 +29,7 @@ agent-link-oracle/.env.test
 agent-link-oracle/.env.production
 agent-link-oracle/.DS_Store
 agent-link-oracle/src/.DS_Store
+
 
 agent-link-protocol/.next
 agent-link-protocol/node_modules
