@@ -16,10 +16,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Custom scrollbar for dark theme */
@@ -43,6 +50,8 @@ body {
 /* Smooth scrolling for agent registry */
 .smooth-scroll {
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
 }
 
 .smooth-scroll::-webkit-scrollbar {
@@ -63,6 +72,76 @@ body {
   background: rgba(100, 116, 139, 0.7);
 }
 
+/* Performance optimizations for smooth scrolling */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize backdrop blur for better scroll performance */
+.backdrop-blur-sm,
+.backdrop-blur-xl {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Optimize fixed elements */
+.fixed {
+  transform: translateZ(0);
+  will-change: auto;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Smooth transitions for better scroll performance */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Optimize scroll performance - prevent layout shifts */
+section {
+  contain: layout;
+  transform: translateZ(0);
+}
+
+/* Optimize motion components */
+[data-framer-component] {
+  will-change: auto;
+  transform: translateZ(0);
+}
+
+/* Reduce repaints during scroll */
+.bg-gray-900\/50,
+.bg-gray-900\/80,
+.bg-gray-950\/80,
+.bg-gray-950\/95 {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize backdrop blur - use sparingly */
+.backdrop-blur-sm,
+.backdrop-blur-xl {
+  will-change: auto;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize agent cards for smooth scrolling */
+.group {
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+/* Prevent text selection during scroll for better performance */
+@media (hover: none) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* Solana Wallet Adapter Dark Theme Overrides */
 .wallet-adapter-button {
   background-color: #AB9FF2 !important;
@@ -70,6 +149,16 @@ body {
   border: none !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.wallet-adapter-button-trigger {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
 }
 
 .wallet-adapter-button:hover {
